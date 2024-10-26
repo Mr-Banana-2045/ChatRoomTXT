@@ -178,7 +178,7 @@ if ($messages) {
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false" onselectstart="return false" ondragstart="return false">
     <script>
         window.onload = function() {
             const savedUsername = localStorage.getItem('username');
