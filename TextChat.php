@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$forbiddenWords = ['hack', 'fuck', 'USA', '.com', '.net', '.onion', '.us', 'xxx'];
+$forbiddenWords = ['hack', 'fuck', 'USA', 'com', 'net', 'onion', 'us', 'xxx'];
 
 if (!isset($_SESSION['usernames'])) {
     $_SESSION['usernames'] = [];
@@ -70,7 +70,11 @@ if ($messages) {
     foreach (explode("\n", $messages) as $msg) {
         if (trim($msg) !== '') {
             $msgContent = strstr($msg, ':') ? trim(substr($msg, strpos($msg, ':') + 1)) : $msg;
-            if (strpos($msg, $_SESSION['name'] . " :") !== false) {
+            $username = strstr($msg, ' :') ? trim(substr($msg, 0, strpos($msg, ' :'))) : $msg;
+
+            if ($username === 'Admin') {
+                $formattedMessages .= "<div class='message left' style='color: red;'>" . htmlspecialchars($msg) . "</div>";
+            } elseif (strpos($msg, $_SESSION['name'] . " :") !== false) {
                 $formattedMessages .= "<div class='message right'>" . htmlspecialchars($msgContent) . "</div>"; 
             } else {
                 $formattedMessages .= "<div class='message left'>" . htmlspecialchars($msg) . "</div>";
@@ -204,9 +208,34 @@ if ($messages) {
         </div>
     <?php endif; ?>
 
-    <h2 style="color:white; font-family: sans-serif; text-align:center;">
-        <a style="color:blue;">Blue</a>Users (<a style='color:cornflowerblue;'><?php echo $userCount; ?></a>)
-    </h2>
+    <script>
+    let usernames = <?php echo json_encode(array_unique($_SESSION['usernames'])); ?>;
+    
+    function showUsernames() {
+        const modalContent = document.getElementById('modal-content');
+        modalContent.innerHTML = "<h3>Users :</h3><hr>";
+        usernames.forEach(name => {
+            modalContent.innerHTML += '<p> ' + name + '</p>';
+        });
+        document.getElementById('usernames-modal').style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById('usernames-modal').style.display = "none";
+    }
+</script>
+
+<div id="usernames-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background-color: rgba(0,0,0,0.7); z-index: 1000; text-align:center;">
+    <div style="background: white; margin: 10% auto; margin-top:10px; padding: 20px; border-radius: 10px; width: 300px; height:500px; font-family: sans-serif; overflow-y: scroll; scrollbar-color: cornflowerblue #f5f2f2; scrollbar-width: thin;">
+        <span onclick="closeModal()" style="cursor:pointer; float:right; font-weight:900; font-size:15px;">&times;</span>
+        <div id="modal-content"></div>
+    </div>
+</div>
+
+<h2 style="color:white; font-family: sans-serif; text-align:center; cursor:pointer;" onclick="showUsernames()">
+    <a style="color:blue;">Blue</a>Users (<a style='color:cornflowerblue;'><?php echo $userCount; ?></a>)
+</h2>
+
     <div id="messages"><?php echo nl2br($formattedMessages); ?></div>
 
     <script>
