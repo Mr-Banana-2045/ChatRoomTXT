@@ -2,7 +2,7 @@
 session_start();
 
 $forbiddenWords = ['hack', 'fuck', 'USA', 'com', 'net', 'onion', 'us', 'xxx'];
-$blockedUsernames = ['lolo'];
+$blockedUsernames = ['moz'];
 
 if (!isset($_SESSION['usernames'])) {
     $_SESSION['usernames'] = [];
