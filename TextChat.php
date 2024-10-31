@@ -2,6 +2,7 @@
 session_start();
 
 $forbiddenWords = ['hack', 'fuck', 'USA', 'com', 'net', 'onion', 'us', 'xxx'];
+$blockedUsernames = ['lolo'];
 
 if (!isset($_SESSION['usernames'])) {
     $_SESSION['usernames'] = [];
@@ -47,14 +48,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = trim($_POST['msg']);
         
         if ($message !== '') {
-            $sanitizedMessage = censorMessage($message, $forbiddenWords);
-            file_put_contents('chat.txt', $_SESSION['name'] . " : " . $sanitizedMessage . PHP_EOL, FILE_APPEND | LOCK_EX);
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
+                $sanitizedMessage = censorMessage($message, $forbiddenWords);
+                file_put_contents('chat.txt', $_SESSION['name'] . " : " . $sanitizedMessage . PHP_EOL, FILE_APPEND | LOCK_EX);
+                header('Location: ' . $_SERVER['PHP_SELF']);
+                exit;
+            }
         } else {
             echo "";
         }
-    }
 }
 
 if (file_exists('chat.txt') && isset($_SESSION['name'])) {
@@ -71,7 +72,9 @@ if ($messages) {
         if (trim($msg) !== '') {
             $msgContent = strstr($msg, ':') ? trim(substr($msg, strpos($msg, ':') + 1)) : $msg;
             $username = strstr($msg, ' :') ? trim(substr($msg, 0, strpos($msg, ' :'))) : $msg;
-
+            if (in_array($_SESSION['name'], $blockedUsernames)) {
+                continue;
+            }
             if ($username === 'Admin') {
                 $formattedMessages .= "<div class='message left' style='color: red;'>" . htmlspecialchars($msg) . "</div>";
             } elseif (strpos($msg, $_SESSION['name'] . " :") !== false) {
@@ -133,6 +136,13 @@ if ($messages) {
         }
         .msgs {
             position: absolute;
+            bottom: 10px;
+            left:0px;
+            text-align: center;
+            right:0px;
+        }
+        .msga{
+            position: fixed;
             bottom: 10px;
             left:0px;
             text-align: center;
@@ -201,10 +211,14 @@ if ($messages) {
         </div>
     <?php else: ?>
         <div class="msgs">
-        <form method="POST" action="">
-            <input class="mes" type="text" name="msg" placeholder="Enter message ..." required pattern="[A-Za-z0-9 ]+" title="Only letters and numbers are allowed">
-            <input class="butms" type="submit" value="send">
-        </form>
+            <?php if (in_array($_SESSION['name'], $blockedUsernames)): ?>
+                <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif; color: black; font-weight: bold; text-align: center; margin-top:-50px; background:white; border-radius:20px; padding:10px; margin-left:50px; margin-right:50px;">You are blocked</div>
+            <?php else: ?>
+                <form method="POST" action="">
+                    <input class="mes" type="text" name="msg" placeholder="Enter message ..." required pattern="[A-Za-z0-9 ]+" title="Only letters and numbers are allowed">
+                    <input class="butms" type="submit" value="send">
+                </form>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 
